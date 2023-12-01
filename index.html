@@ -50,33 +50,43 @@
         balls.forEach(ball1 => {
           balls.forEach(ball2 => {
             if (ball1 !== ball2) {
-              const rect1 = ball1.getBoundingClientRect();
-              const rect2 = ball2.getBoundingClientRect();
+              const dx = ball2.offsetLeft + ball2.clientWidth / 2 - (ball1.offsetLeft + ball1.clientWidth / 2);
+              const dy = ball2.offsetTop + ball2.clientHeight / 2 - (ball1.offsetTop + ball1.clientHeight / 2);
+              const distance = Math.hypot(dx, dy);
+              const minDistance = ball1.clientWidth / 2 + ball2.clientWidth / 2;
 
-              if (
-                rect1.top < rect2.bottom &&
-                rect1.bottom > rect2.top &&
-                rect1.left < rect2.right &&
-                rect1.right > rect2.left
-              ) {
-                // Handle collision logic here (update speeds)
-                const dx = ball2.offsetLeft - ball1.offsetLeft;
-                const dy = ball2.offsetTop - ball1.offsetTop;
-                const distance = Math.hypot(dx, dy);
+              if (distance < minDistance) {
+                const angle = Math.atan2(dy, dx);
+                const overlap = minDistance - distance;
 
-                if (distance < 20) {
-                  const angle = Math.atan2(dy, dx);
-                  const speed1 = Math.hypot(ball1.speedX, ball1.speedY);
-                  const speed2 = Math.hypot(ball2.speedX, ball2.speedY);
+                const moveX = overlap * Math.cos(angle);
+                const moveY = overlap * Math.sin(angle);
 
-                  const newSpeed1 = speed2;
-                  const newSpeed2 = speed1;
+                ball1.style.left = ball1.offsetLeft - moveX + 'px';
+                ball1.style.top = ball1.offsetTop - moveY + 'px';
+                ball2.style.left = ball2.offsetLeft + moveX + 'px';
+                ball2.style.top = ball2.offsetTop + moveY + 'px';
 
-                  ball1.speedX = Math.cos(angle) * newSpeed1;
-                  ball1.speedY = Math.sin(angle) * newSpeed1;
-                  ball2.speedX = Math.cos(angle) * newSpeed2;
-                  ball2.speedY = Math.sin(angle) * newSpeed2;
-                }
+                // Adjust speeds after collision
+                const angle1 = Math.atan2(ball1.speedY, ball1.speedX);
+                const angle2 = Math.atan2(ball2.speedY, ball2.speedX);
+                const speed1 = Math.hypot(ball1.speedX, ball1.speedY);
+                const speed2 = Math.hypot(ball2.speedX, ball2.speedY);
+
+                const newSpeed1X = speed1 * Math.cos(angle1 - angle);
+                const newSpeed1Y = speed1 * Math.sin(angle1 - angle);
+                const newSpeed2X = speed2 * Math.cos(angle2 - angle);
+                const newSpeed2Y = speed2 * Math.sin(angle2 - angle);
+
+                const finalSpeed1X = ((ball1.clientWidth - overlap) * newSpeed1X + 2 * ball2.clientWidth * newSpeed2X) / (ball1.clientWidth + ball2.clientWidth);
+                const finalSpeed1Y = newSpeed1Y;
+                const finalSpeed2X = ((ball2.clientWidth - overlap) * newSpeed2X + 2 * ball1.clientWidth * newSpeed1X) / (ball1.clientWidth + ball2.clientWidth);
+                const finalSpeed2Y = newSpeed2Y;
+
+                ball1.speedX = Math.cos(angle) * finalSpeed1X + Math.cos(angle + Math.PI / 2) * finalSpeed1Y;
+                ball1.speedY = Math.sin(angle) * finalSpeed1X + Math.sin(angle + Math.PI / 2) * finalSpeed1Y;
+                ball2.speedX = Math.cos(angle) * finalSpeed2X + Math.cos(angle + Math.PI / 2) * finalSpeed2Y;
+                ball2.speedY = Math.sin(angle) * finalSpeed2X + Math.sin(angle + Math.PI / 2) * finalSpeed2Y;
               }
             }
           });
@@ -102,6 +112,27 @@
         handleCollisions();
       }
 
+      document.addEventListener("mousemove", function(event) {
+        const balls = document.querySelectorAll('.ball');
+        balls.forEach(ball => {
+          const distance = Math.hypot(event.clientX - ball.offsetLeft - ball.clientWidth / 2, event.clientY - ball.offsetTop - ball.clientHeight / 2);
+
+          if (distance < 40) {
+            // Move away from the cursor
+            const angle = Math.atan2(event.clientY - ball.offsetTop, event.clientX - ball.offsetLeft);
+            const newX = ball.offsetLeft + Math.cos(angle) * 5;
+            const newY = ball.offsetTop + Math.sin(angle) * 5;
+
+            // Ensure the new position is within the screen bounds
+            const maxX = window.innerWidth - ball.clientWidth;
+            const maxY = window.innerHeight - ball.clientHeight;
+
+            ball.style.left = Math.max(0, Math.min(newX, maxX)) + 'px';
+            ball.style.top = Math.max(0, Math.min(newY, maxY)) + 'px';
+          }
+        });
+      });
+
       setInterval(moveBalls, 16); // Update ball positions every 16 milliseconds
     });
   </script>
@@ -109,4 +140,3 @@
 <body>
 </body>
 </html>
-
