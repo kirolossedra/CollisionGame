@@ -11,53 +11,73 @@
 
     .ball {
       position: absolute;
-      width: 50px;
-      height: 50px;
+      width: 20px;
+      height: 20px;
       background-color: #3498db;
       border-radius: 50%;
+      animation: moveBall 2s linear infinite;
       transition: 0.5s;
+    }
+
+    @keyframes moveBall {
+      0% { transform: translate(0, 0); }
+      25% { transform: translate(50px, 50px); }
+      50% { transform: translate(0, 100px); }
+      75% { transform: translate(-50px, 50px); }
+      100% { transform: translate(0, 0); }
     }
   </style>
   <script>
     document.addEventListener("DOMContentLoaded", function() {
-      const balls = document.querySelectorAll('.ball');
-
-      balls.forEach(ball => {
+      const createBall = () => {
+        const ball = document.createElement('div');
+        ball.className = 'ball';
         ball.style.top = Math.random() * window.innerHeight + 'px';
         ball.style.left = Math.random() * window.innerWidth + 'px';
-      });
+        document.body.appendChild(ball);
+      };
+
+      // Create initial balls
+      for (let i = 0; i < 5; i++) {
+        createBall();
+      }
 
       function checkCollision(ball1, ball2) {
         const dx = ball1.offsetLeft - ball2.offsetLeft;
         const dy = ball1.offsetTop - ball2.offsetTop;
         const distance = Math.hypot(dx, dy);
-        return distance < 100; // Adjust the collision distance as needed
+        return distance < 40; // Adjust the collision distance as needed
       }
 
       function handleCollisions() {
-        for (let i = 0; i < balls.length; i++) {
-          for (let j = i + 1; j < balls.length; j++) {
-            if (checkCollision(balls[i], balls[j])) {
+        const balls = document.querySelectorAll('.ball');
+        balls.forEach(ball1 => {
+          balls.forEach(ball2 => {
+            if (ball1 !== ball2 && checkCollision(ball1, ball2)) {
               // Handle collision logic here (for now, just swap positions)
-              const tempTop = balls[i].style.top;
-              const tempLeft = balls[i].style.left;
-              balls[i].style.top = balls[j].style.top;
-              balls[i].style.left = balls[j].style.left;
-              balls[j].style.top = tempTop;
-              balls[j].style.left = tempLeft;
+              const tempTop = ball1.style.top;
+              const tempLeft = ball1.style.left;
+              ball1.style.top = ball2.style.top;
+              ball1.style.left = ball2.style.left;
+              ball2.style.top = tempTop;
+              ball2.style.left = tempLeft;
             }
-          }
-        }
+          });
+        });
       }
 
       document.addEventListener("mousemove", function(event) {
+        const balls = document.querySelectorAll('.ball');
         balls.forEach(ball => {
           const distance = Math.hypot(event.clientX - ball.offsetLeft - ball.clientWidth / 2, event.clientY - ball.offsetTop - ball.clientHeight / 2);
 
-          if (distance < 100) {
-            ball.style.display = 'none';
-          } else {
-            ball.style.display = 'block';
+          if (distance < 40) {
+            // Move away from the cursor
+            const angle = Math.atan2(event.clientY - ball.offsetTop, event.clientX - ball.offsetLeft);
+            const newX = ball.offsetLeft + Math.cos(angle) * 50;
+            const newY = ball.offsetTop + Math.sin(angle) * 50;
+            ball.style.left = newX + 'px';
+            ball.style.top = newY + 'px';
           }
         });
 
@@ -67,8 +87,5 @@
   </script>
 </head>
 <body>
-  <div class="ball"></div>
-  <div class="ball"></div>
-  <!-- Add more balls as needed -->
 </body>
 </html>
