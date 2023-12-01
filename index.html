@@ -35,13 +35,13 @@
         ball.style.backgroundColor = createRandomColor();
         ball.style.top = Math.random() * window.innerHeight + 'px';
         ball.style.left = Math.random() * window.innerWidth + 'px';
-        ball.speedX = Math.random() * 2 - 1; // Initial speed in X direction (-1 to 1)
-        ball.speedY = Math.random() * 2 - 1; // Initial speed in Y direction (-1 to 1)
+        ball.speedX = Math.random() * 4 - 2; // Initial speed in X direction (-2 to 2)
+        ball.speedY = Math.random() * 4 - 2; // Initial speed in Y direction (-2 to 2)
         document.body.appendChild(ball);
       };
 
-      // Create initial balls
-      for (let i = 0; i < 30; i++) {
+      // Create many balls
+      for (let i = 0; i < 150; i++) {
         createBall();
       }
 
@@ -102,27 +102,6 @@
         handleCollisions();
       }
 
-      document.addEventListener("mousemove", function(event) {
-        const balls = document.querySelectorAll('.ball');
-        balls.forEach(ball => {
-          const distance = Math.hypot(event.clientX - ball.offsetLeft - ball.clientWidth / 2, event.clientY - ball.offsetTop - ball.clientHeight / 2);
-
-          if (distance < 40) {
-            // Move away from the cursor
-            const angle = Math.atan2(event.clientY - ball.offsetTop, event.clientX - ball.offsetLeft);
-            const newX = ball.offsetLeft + Math.cos(angle) * 5;
-            const newY = ball.offsetTop + Math.sin(angle) * 5;
-
-            // Ensure the new position is within the screen bounds
-            const maxX = window.innerWidth - ball.clientWidth;
-            const maxY = window.innerHeight - ball.clientHeight;
-
-            ball.style.left = Math.max(0, Math.min(newX, maxX)) + 'px';
-            ball.style.top = Math.max(0, Math.min(newY, maxY)) + 'px';
-          }
-        });
-      });
-
       setInterval(moveBalls, 16); // Update ball positions every 16 milliseconds
     });
   </script>
@@ -130,3 +109,4 @@
 <body>
 </body>
 </html>
+
