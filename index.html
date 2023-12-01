@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+
+    .ball {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      background-color: #3498db;
+      border-radius: 50%;
+      transition: 0.5s;
+    }
+  </style>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const balls = document.querySelectorAll('.ball');
+
+      balls.forEach(ball => {
+        ball.style.top = Math.random() * window.innerHeight + 'px';
+        ball.style.left = Math.random() * window.innerWidth + 'px';
+      });
+
+      function checkCollision(ball1, ball2) {
+        const dx = ball1.offsetLeft - ball2.offsetLeft;
+        const dy = ball1.offsetTop - ball2.offsetTop;
+        const distance = Math.hypot(dx, dy);
+        return distance < 100; // Adjust the collision distance as needed
+      }
+
+      function handleCollisions() {
+        for (let i = 0; i < balls.length; i++) {
+          for (let j = i + 1; j < balls.length; j++) {
+            if (checkCollision(balls[i], balls[j])) {
+              // Handle collision logic here (for now, just swap positions)
+              const tempTop = balls[i].style.top;
+              const tempLeft = balls[i].style.left;
+              balls[i].style.top = balls[j].style.top;
+              balls[i].style.left = balls[j].style.left;
+              balls[j].style.top = tempTop;
+              balls[j].style.left = tempLeft;
+            }
+          }
+        }
+      }
+
+      document.addEventListener("mousemove", function(event) {
+        balls.forEach(ball => {
+          const distance = Math.hypot(event.clientX - ball.offsetLeft - ball.clientWidth / 2, event.clientY - ball.offsetTop - ball.clientHeight / 2);
+
+          if (distance < 100) {
+            ball.style.display = 'none';
+          } else {
+            ball.style.display = 'block';
+          }
+        });
+
+        handleCollisions();
+      });
+    });
+  </script>
+</head>
+<body>
+  <div class="ball"></div>
+  <div class="ball"></div>
+  <!-- Add more balls as needed -->
+</body>
+</html>
