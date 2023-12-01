@@ -15,16 +15,7 @@
       width: 20px;
       height: 20px;
       border-radius: 50%;
-      animation: moveBall linear infinite;
-      transition: 0.5s;
-    }
-
-    @keyframes moveBall {
-      0% { transform: translate(0, 0); }
-      25% { transform: translate(2px, 2px); }
-      50% { transform: translate(0, 4px); }
-      75% { transform: translate(-2px, 2px); }
-      100% { transform: translate(0, 0); }
+      transition: 0.1s;
     }
   </style>
   <script>
@@ -44,6 +35,8 @@
         ball.style.backgroundColor = createRandomColor();
         ball.style.top = Math.random() * window.innerHeight + 'px';
         ball.style.left = Math.random() * window.innerWidth + 'px';
+        ball.speedX = Math.random() * 2 - 1; // Initial speed in X direction (-1 to 1)
+        ball.speedY = Math.random() * 2 - 1; // Initial speed in Y direction (-1 to 1)
         document.body.appendChild(ball);
       };
 
@@ -66,17 +59,47 @@
                 rect1.left < rect2.right &&
                 rect1.right > rect2.left
               ) {
-                // Handle collision logic here (for now, just swap positions)
-                const tempTop = ball1.style.top;
-                const tempLeft = ball1.style.left;
-                ball1.style.top = ball2.style.top;
-                ball1.style.left = ball2.style.left;
-                ball2.style.top = tempTop;
-                ball2.style.left = tempLeft;
+                // Handle collision logic here (update speeds)
+                const dx = ball2.offsetLeft - ball1.offsetLeft;
+                const dy = ball2.offsetTop - ball1.offsetTop;
+                const distance = Math.hypot(dx, dy);
+
+                if (distance < 20) {
+                  const angle = Math.atan2(dy, dx);
+                  const speed1 = Math.hypot(ball1.speedX, ball1.speedY);
+                  const speed2 = Math.hypot(ball2.speedX, ball2.speedY);
+
+                  const newSpeed1 = speed2;
+                  const newSpeed2 = speed1;
+
+                  ball1.speedX = Math.cos(angle) * newSpeed1;
+                  ball1.speedY = Math.sin(angle) * newSpeed1;
+                  ball2.speedX = Math.cos(angle) * newSpeed2;
+                  ball2.speedY = Math.sin(angle) * newSpeed2;
+                }
               }
             }
           });
         });
+      }
+
+      function moveBalls() {
+        const balls = document.querySelectorAll('.ball');
+        balls.forEach(ball => {
+          ball.style.left = ball.offsetLeft + ball.speedX + 'px';
+          ball.style.top = ball.offsetTop + ball.speedY + 'px';
+
+          // Bounce off the walls
+          if (ball.offsetLeft <= 0 || ball.offsetLeft >= window.innerWidth - ball.clientWidth) {
+            ball.speedX = -ball.speedX;
+          }
+
+          if (ball.offsetTop <= 0 || ball.offsetTop >= window.innerHeight - ball.clientHeight) {
+            ball.speedY = -ball.speedY;
+          }
+        });
+
+        handleCollisions();
       }
 
       document.addEventListener("mousemove", function(event) {
@@ -98,9 +121,9 @@
             ball.style.top = Math.max(0, Math.min(newY, maxY)) + 'px';
           }
         });
-
-        handleCollisions();
       });
+
+      setInterval(moveBalls, 16); // Update ball positions every 16 milliseconds
     });
   </script>
 </head>
