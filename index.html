@@ -7,60 +7,73 @@
     body {
       margin: 0;
       overflow: hidden;
+      background-color: #f0f0f0;
     }
 
     .ball {
       position: absolute;
       width: 20px;
       height: 20px;
-      background-color: #3498db;
       border-radius: 50%;
-      animation: moveBall 2s linear infinite;
+      animation: moveBall linear infinite;
       transition: 0.5s;
     }
 
     @keyframes moveBall {
       0% { transform: translate(0, 0); }
-      25% { transform: translate(50px, 50px); }
-      50% { transform: translate(0, 100px); }
-      75% { transform: translate(-50px, 50px); }
+      25% { transform: translate(2px, 2px); }
+      50% { transform: translate(0, 4px); }
+      75% { transform: translate(-2px, 2px); }
       100% { transform: translate(0, 0); }
     }
   </style>
   <script>
     document.addEventListener("DOMContentLoaded", function() {
+      const createRandomColor = () => {
+        const letters = '0123456789ABCDEF';
+        let color = '#';
+        for (let i = 0; i < 6; i++) {
+          color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+      };
+
       const createBall = () => {
         const ball = document.createElement('div');
         ball.className = 'ball';
+        ball.style.backgroundColor = createRandomColor();
         ball.style.top = Math.random() * window.innerHeight + 'px';
         ball.style.left = Math.random() * window.innerWidth + 'px';
         document.body.appendChild(ball);
       };
 
       // Create initial balls
-      for (let i = 0; i < 5; i++) {
+      for (let i = 0; i < 30; i++) {
         createBall();
-      }
-
-      function checkCollision(ball1, ball2) {
-        const dx = ball1.offsetLeft - ball2.offsetLeft;
-        const dy = ball1.offsetTop - ball2.offsetTop;
-        const distance = Math.hypot(dx, dy);
-        return distance < 40; // Adjust the collision distance as needed
       }
 
       function handleCollisions() {
         const balls = document.querySelectorAll('.ball');
         balls.forEach(ball1 => {
           balls.forEach(ball2 => {
-            if (ball1 !== ball2 && checkCollision(ball1, ball2)) {
-              // Handle collision logic here (for now, just swap positions)
-              const tempTop = ball1.style.top;
-              const tempLeft = ball1.style.left;
-              ball1.style.top = ball2.style.top;
-              ball1.style.left = ball2.style.left;
-              ball2.style.top = tempTop;
-              ball2.style.left = tempLeft;
+            if (ball1 !== ball2) {
+              const rect1 = ball1.getBoundingClientRect();
+              const rect2 = ball2.getBoundingClientRect();
+
+              if (
+                rect1.top < rect2.bottom &&
+                rect1.bottom > rect2.top &&
+                rect1.left < rect2.right &&
+                rect1.right > rect2.left
+              ) {
+                // Handle collision logic here (for now, just swap positions)
+                const tempTop = ball1.style.top;
+                const tempLeft = ball1.style.left;
+                ball1.style.top = ball2.style.top;
+                ball1.style.left = ball2.style.left;
+                ball2.style.top = tempTop;
+                ball2.style.left = tempLeft;
+              }
             }
           });
         });
@@ -74,10 +87,15 @@
           if (distance < 40) {
             // Move away from the cursor
             const angle = Math.atan2(event.clientY - ball.offsetTop, event.clientX - ball.offsetLeft);
-            const newX = ball.offsetLeft + Math.cos(angle) * 50;
-            const newY = ball.offsetTop + Math.sin(angle) * 50;
-            ball.style.left = newX + 'px';
-            ball.style.top = newY + 'px';
+            const newX = ball.offsetLeft + Math.cos(angle) * 5;
+            const newY = ball.offsetTop + Math.sin(angle) * 5;
+
+            // Ensure the new position is within the screen bounds
+            const maxX = window.innerWidth - ball.clientWidth;
+            const maxY = window.innerHeight - ball.clientHeight;
+
+            ball.style.left = Math.max(0, Math.min(newX, maxX)) + 'px';
+            ball.style.top = Math.max(0, Math.min(newY, maxY)) + 'px';
           }
         });
 
